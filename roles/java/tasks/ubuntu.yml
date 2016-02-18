@@ -1,0 +1,9 @@
+---
+
+- name: "Add webupd8team PPA (Ubuntu)"
+  apt_repository:
+    repo: "ppa:webupd8team/java"
+    update_cache: "yes"
+  tags:
+    - "apt"
+    - "java"

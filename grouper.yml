@@ -1,0 +1,11 @@
+---
+
+- name: "Grouper"
+  hosts: "grouper"
+  become: "yes"
+  gather_facts: "yes"
+  roles:
+    - "hostname"
+    - "users"
+    - "java"
+    - "grouper"

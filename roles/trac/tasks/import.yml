@@ -1,0 +1,41 @@
+---
+
+- name: "Trac | fetch latest daily webroot backup from s3"
+  become: "no"
+  shell:
+    creates="{{ admin_home_directory }}/tmp/trac-www.backup.tar.gz"
+    aws s3 cp {{ trac_webroot_s3_restore_file }} {{ admin_home_directory }}/tmp/trac-www.backup.tar.gz
+  when: "trac_webroot_s3_restore_file is defined"
+  tags:
+    - "s3-import"
+    - "trac"
+
+- name: "Trac | extract latest webroot backup"
+  become: "no"
+  shell:
+    creates="{{ admin_home_directory }}/app/trac"
+    tar -xzf {{ admin_home_directory }}/tmp/trac-www.backup.tar.gz -C {{ admin_home_directory }}/app
+  when: "trac_webroot_s3_restore_file is defined"
+  tags:
+    - "s3-import"
+    - "trac"
+
+- name: "Trac | fetch latest daily database backup from s3"
+  become: "no"
+  shell:
+    creates="{{ admin_home_directory }}/tmp/trac-db.backup.sql.gz"
+    aws s3 cp {{ trac_database_s3_restore_file }} {{ admin_home_directory }}/tmp/trac-db.backup.sql.gz
+  when: "trac_database_s3_restore_file is defined and trac_database is defined"
+  tags:
+    - "s3-import"
+    - "trac"
+
+- name: "Trac | import latest database backup"
+  become: "no"
+  shell:
+    creates="{{ admin_home_directory }}/tmp/trac-db.backup.imported"
+    gunzip -c {{ admin_home_directory }}/tmp/trac-db.backup.sql.gz | psql -h {{ trac_host | default('localhost') }} -U {{ trac_user | default('trac') }} -w {{ trac_database }} && touch {{ admin_home_directory }}/tmp/trac-db.backup.imported
+  when: "trac_database_s3_restore_file is defined and trac_database is defined"
+  tags:
+    - "s3-import"
+    - "trac"

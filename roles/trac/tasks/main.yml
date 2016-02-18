@@ -1,0 +1,105 @@
+---
+
+- name: "Trac | prerequisites"
+  apt:
+    name="{{ item }}"
+    state="present"
+  with_items:
+    - "build-essential"
+    - "postgresql"
+    - "python-dev"
+    - "python-subversion"
+    - "libpq-dev"
+  tags:
+    - "trac"
+    - "packages"
+
+- name: "Trac | install"
+  pip:
+    name="{{ item }}"
+  with_items:
+    - "trac"
+    - "psycopg2"
+    - "tracaccountmanager"
+  tags:
+    - "trac"
+    - "packages"
+
+- name: "Trac | install additional plugins"
+  easy_install:
+    name="{{ item }}"
+  with_items:
+    - "https://trac-hacks.org/svn/datefieldplugin/1.0"
+    - "https://trac-hacks.org/svn/simpleticketplugin/tags/4.0"
+    - "https://trac-hacks.org/svn/autocompleteusersplugin/trunk"
+    - "https://trac-hacks.org/svn/customfieldadminplugin/0.11"
+    - "https://trac-hacks.org/svn/ticketimportplugin/0.11"
+    - "https://trac-hacks.org/svn/tracjsganttplugin/0.11/"
+  tags:
+    - "trac"
+    - "packages"
+
+- name: "Trac | create app directories"
+  file:
+    path="{{ admin_home_directory }}/{{ item }}"
+    state="directory"
+    owner="{{ admin_user }}"
+    group="{{ admin_user }}"
+    mode="0755"
+  with_items:
+    - "app"
+    - "run"
+  tags:
+    - "trac"
+
+- name: "Trac | postgres credentials file"
+  template:
+    src="pgpass.j2"
+    dest="{{ admin_home_directory }}/.pgpass"
+    owner="{{ admin_user }}"
+    group="{{ admin_user }}"
+    mode="0600"
+  tags:
+    - "trac"
+    - "postgres"
+
+- name: "Trac | create postgres database"
+  become_user: "postgres"
+  postgresql_db:
+    name="{{ trac_database | default('trac') }}"
+    state="present"
+  tags:
+    - "trac"
+    - "postgres"
+
+- name: "Trac | create postgres user"
+  become_user: "postgres"
+  postgresql_user:
+    db="{{ trac_database | default('trac') }}"
+    name="{{ trac_user | default('trac') }}"
+    password="{{ trac_user_password | default('password') }}"
+    priv="ALL"
+    state="present"
+  tags:
+    - "trac"
+    - "postgres"
+
+- include: "apache.yml"
+- include: "ufw.yml"
+
+- name: "Trac | start"
+  become: "no"
+  shell:
+    creates="{{ admin_home_directory }}/run/tracd.pid"
+    /usr/local/bin/tracd --daemonize --pidfile={{ admin_home_directory }}/run/tracd.pid --port={{ trac_app_port }} --hostname=localhost --base-path=/traffic -s {{ admin_home_directory }}/app/trac/sites/traffic
+  tags:
+    - "trac"
+
+- name: "Trac | restart on reboot"
+  become: "no"
+  cron:
+    name="trac"
+    special_time="reboot"
+    job="/usr/local/bin/tracd --daemonize --pidfile={{ admin_home_directory }}/run/tracd.pid --port={{ trac_app_port }} --hostname=localhost --base-path=/traffic -s {{ admin_home_directory }}/app/trac/sites/traffic"
+  tags:
+    - "trac"

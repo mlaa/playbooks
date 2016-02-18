@@ -1,0 +1,73 @@
+---
+
+- name: "Install packages"
+  apt:
+    name: "{{ item }}"
+    state: "present"
+    install_recommends: "yes"
+  with_items:
+    - "curl"
+    - "mysql-client"
+    - "python-mysqldb"
+    - "tmux"
+    - "unzip"
+    - "vim"
+  tags:
+    - "grouper"
+    - "apt"
+
+- name: "Create Grouper install directory"
+  file:
+    path: "{{ grouper_install_dir }}"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0755"
+    state: "directory"
+  tags:
+    - "grouper"
+
+- name: "Download and unpack Grouper installer"
+  unarchive:
+    src: "{{ grouper_installer_url }}"
+    dest: "/tmp"
+    copy: "no"
+    mode: "0755"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+  tags:
+    - "grouper"
+
+- name: "Create Grouper database"
+  mysql_db:
+    name: "{{ mysql_app_database }}"
+    state: "present"
+    login_host: "{{ mysql_host }}"
+    login_user: "{{ mysql_root_user }}"
+    login_password: "{{ mysql_root_password }}"
+  tags:
+    - "grouper"
+    - "mysql"
+
+- name: "Create/assign database user and grant permissions"
+  mysql_user:
+    name: "{{ mysql_app_user }}"
+    host: "{{ ansible_default_ipv4.address }}"
+    password: "{{ mysql_app_password }}"
+    priv: "{{ mysql_app_database }}.*:ALL"
+    state: "present"
+    login_host: "{{ mysql_host }}"
+    login_user: "{{ mysql_root_user }}"
+    login_password: "{{ mysql_root_password }}"
+  tags:
+    - "grouper"
+    - "mysql"
+
+- name: "Create .my.cnf"
+  become: "no"
+  template:
+    src: "my.cnf.j2"
+    dest: "~/.my.cnf"
+    mode: "0600"
+  tags:
+    - "grouper"
+    - "mysql"

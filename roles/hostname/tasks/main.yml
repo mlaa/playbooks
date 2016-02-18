@@ -1,0 +1,7 @@
+---
+
+- hostname:
+    name="{{ inventory_hostname }}"
+  when: "set_hostname | default(false)"
+  tags:
+    - "hostname"

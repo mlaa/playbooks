@@ -1,0 +1,8 @@
+---
+
+- name: "Trac"
+  hosts: "trac"
+  become: "yes"
+  gather_facts: "yes"
+  roles:
+    - "trac"

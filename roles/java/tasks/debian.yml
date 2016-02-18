@@ -1,0 +1,19 @@
+---
+
+- name: "Add webupd8team PPA key (Debian)"
+  apt_key:
+    url: "http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0xC2518248EEA14886"
+    state: "present"
+  tags:
+    - "apt"
+    - "java"
+
+- name: "Add webupd8team PPA repo (Debian)"
+  apt_repository:
+    repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main"
+    state: "present"
+
+- name: "Add webupd8team PPA repo src (Debian)"
+  apt_repository:
+    repo: "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main"
+    state: "present"

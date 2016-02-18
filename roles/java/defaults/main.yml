@@ -1,0 +1,4 @@
+---
+
+oracle_java_version: "8"
+install_oracle_jce: false

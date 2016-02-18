@@ -1,0 +1,26 @@
+---
+
+- name: "Trac | apache"
+  apt:
+    name="{{ item }}"
+    state="present"
+  with_items:
+    - "apache2-mpm-worker"
+  tags:
+    - "trac"
+    - "apache"
+    - "packages"
+
+- name: "Trac | apache modules"
+  apache2_module:
+    name="{{ item }}"
+    state="present"
+  with_items:
+    - "authnz_ldap"
+    - "headers"
+    - "proxy"
+    - "rewrite"
+  tags:
+    - "trac"
+    - "apache"
+    - "packages"

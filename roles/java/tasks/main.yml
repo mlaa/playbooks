@@ -1,0 +1,39 @@
+---
+
+- include: "debian.yml"
+  when: "ansible_distribution in ['Debian']"
+
+- include: "ubuntu.yml"
+  when: "ansible_distribution in ['Ubuntu']"
+
+- name: "Accept Oracle Java {{ oracle_java_version }} license"
+  debconf:
+    name: "oracle-java{{ oracle_java_version }}-installer"
+    question: "shared/accepted-oracle-license-v1-1"
+    value: "true"
+    vtype: "select"
+  tags:
+    - "apt"
+    - "java"
+
+- name: "Install packages"
+  apt:
+    name: "{{ item }}"
+    state: "present"
+    install_recommends: "yes"
+  with_items:
+    - "oracle-java{{ oracle_java_version }}-installer"
+    - "oracle-java{{ oracle_java_version }}-set-default"
+  tags:
+    - "apt"
+    - "java"
+
+- name: "Install Oracle Java {{ oracle_java_version }} cryptography extension"
+  apt:
+    name: "oracle-java{{ oracle_java_version }}-unlimited-jce-policy"
+    state: "present"
+    install_recommends: "yes"
+  when: "install_oracle_jce"
+  tags:
+    - "apt"
+    - "java"

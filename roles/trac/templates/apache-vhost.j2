@@ -1,0 +1,31 @@
+<VirtualHost *:80>
+
+  DocumentRoot {{ admin_home_directory }}/app/public
+
+  <Location /traffic>
+
+    AuthType Basic
+    AuthBasicProvider file ldap
+    AuthName "MLA Trafficking"
+
+    AuthUserFile {{ admin_home_directory }}/app/trac/sites/traffic/.htpasswd
+
+    AuthLDAPURL {{ trac_ldap_url }}
+    AuthLDAPBindDN {{ trac_ldap_user }}
+    AuthLDAPBindPassword {{ trac_ldap_password }}
+    AuthzLDAPAuthoritative off
+
+    Require valid-user
+
+    Order Allow,Deny
+    Allow from All
+
+    ProxyPass http://localhost:{{ trac_app_port }}/traffic
+
+    RewriteEngine On
+    RewriteRule .* - [E=RU:%{LA-U:REMOTE_USER}]
+    RequestHeader set REMOTE_USER "%{RU}e"
+
+  </Location>
+
+</VirtualHost>

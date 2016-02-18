@@ -1,0 +1,4 @@
+---
+
+grouper_installer_url: "http://software.internet2.edu/grouper/release/2.2.2/grouper.installer-2.2.2.tar.gz"
+grouper_install_dir: "/opt/grouper"
