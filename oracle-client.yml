@@ -1,0 +1,11 @@
+---
+
+- name: "Oracle Instant Client"
+  hosts: "oracle-client"
+  become: "yes"
+  gather_facts: "yes"
+  roles:
+    - "hostname"
+    - "users"
+    - "azavea.oracle-instantclient"
+    - "oracle-client"

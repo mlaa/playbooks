@@ -1,0 +1,11 @@
+---
+
+- name: "Add symlinks to Oracle bins"
+  file:
+    src: "{{ instantclient_oracle_home }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: "link"
+  with_items:
+    - "sqlplus"
+    - "genezi"
+    - "adrci"
