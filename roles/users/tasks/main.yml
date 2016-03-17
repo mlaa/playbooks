@@ -4,4 +4,4 @@
   authorized_key:
     user="{{ admin_user }}"
     key="{{ item }}"
-  with_items: "admin_user_ssh_keys | default([])"
+  with_items: "{{ admin_user_ssh_keys | default([]) }}"
